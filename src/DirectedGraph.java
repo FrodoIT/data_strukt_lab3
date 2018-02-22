@@ -1,9 +1,11 @@
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class DirectedGraph<E extends Edge> {
 
 	//maybe HashMap for graph
 	private List<Edge> edges;
+	private int noOfNodes;
 	//Probably need to represent edges
 	//private NodeTable nodeTable;
 
@@ -11,6 +13,7 @@ public class DirectedGraph<E extends Edge> {
 	public DirectedGraph(int noOfNodes) {
 		//initialize the data
 		edges = new ArrayList<>();
+		this.noOfNodes = noOfNodes;
 	}
 
 	public void addEdge(E e) {
@@ -62,18 +65,62 @@ public class DirectedGraph<E extends Edge> {
 
 
 	public Iterator<E> minimumSpanningTree() {
+
+		PriorityQueue<Edge> pq = new PriorityQueue();
+
+		//The visied nodes
+		ArrayList<ArrayList<Integer>> subtrees = new ArrayList<>(noOfNodes);
+
+
 		//skapa ett fält cc som för varje nod innehåller en egen tom lista (som skall komma att innehålla bågar sen) (dvs varje nod är i en egen komponent)
+		List<E> mST = new ArrayList<E>();
+
 		//Lägg in alla bågar i en prioritetskö pq
+		pq.addAll(edges);
+
 		//Så länge pq ej är tom && |cc| > 1 {
-		//hämta e = (from, to, weight) från pq
-		//om from och to inte refererar till samma lista i cc {
-		//flytta över alla elementen från den kortare listan till den andra och se till att alla berörda //noder i cc refererar till den påfyllda listan
-		//lägg slutligen e i den påfyllda listan
-		//} borde den vara här, eller en rad upp?
-		//}
+		while(!pq.isEmpty() && subtrees.size() > 1){
 
+			//hämta e = (from, to, weight) från pq
+			Edge e = pq.poll();
 
-		return null;
+			ArrayList<Integer> subtreefrom = new ArrayList<>();
+			ArrayList<Integer> subtreeto = new ArrayList<>();
+
+			for (ArrayList subtree:subtrees)
+			{
+					if (subtree.contains(e.from)){
+						subtreefrom = subtree;
+					}
+					else if(subtree.contains(e.to)){
+						subtreeto = subtree;
+					}
+			}
+
+			if(!subtreefrom.equals(subtreeto)){
+				ArrayList<Integer> newSubtree = new ArrayList<>();
+				if(subtreefrom.size() > subtreeto.size()){
+					subtreefrom.addAll(subtreeto);
+					newSubtree = subtreefrom;
+				}
+				else{
+					subtreeto.addAll(subtreefrom);
+					newSubtree = subtreefrom;
+				}
+				subtrees.remove(subtreeto);
+				subtrees.remove(subtreefrom);
+				subtrees.add(newSubtree);
+				mST.add((E) e);
+			}
+			else if(subtreefrom.isEmpty() && subtreeto.isEmpty()){
+				subtreefrom.add(e.from);
+				subtreefrom.add(e.to);
+				mST.add((E) e);
+			}
+
+		}
+		
+		return mST.iterator();
 	}
 
 }
