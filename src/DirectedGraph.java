@@ -1,48 +1,88 @@
 
+import javax.xml.soap.Node;
 import java.util.*;
 
-public class DirectedGraph<E extends Edge> {
+public class DirectedGraph<E extends Edge, NO extends NodeObject> {
 
 	//maybe HashMap for graph
-	//private HashMap<> graph;
-
+	private List<Edge> edges;
+	private NodeTable<NodeObject> nodes;
 	//Probably need to represent edges
+	//private NodeTable nodeTable;
 
 
 	public DirectedGraph(int noOfNodes) {
 		//initialize the data
-
+		nodes = new NodeTable<>(noOfNodes);
+		edges = new ArrayList<>();
 	}
 
 	public void addEdge(E e) {
-		;
+		if (e != null) edges.add(e);
 	}
 
 	public Iterator<E> shortestPath(int from, int to) {
-		//perform the Dijsktra algorithm
-		/*
 
-		1: lägg(startnod, 0, tom väg) i Priority queue
+		NodeObject first = nodes.find(from);
 
-		2: While(Priority que is not empty)
+		//visited nodes
+		List<NodeObject> visited = new ArrayList<>();
 
-		3: (nod, cost, path) = First element in priority queue
+		//
+		PriorityQueue<CompDijsktraPath> queue = new PriorityQueue<>();
 
-		4: If node is not visited
+		//add first to the queue
+		queue.add(new CompDijsktraPath(first, 0, null));
 
-		5: If node is the end, return path
+		while (!queue.isEmpty()) {
 
-		6: else, add to visited
+			CompDijsktraPath current = queue.poll();
+			if (!visited.contains(current.node)) {
 
-		7: for every neighbor if not visited add to priority queue
+				if (current.node.getNodeNo() == to) {
 
-		//Very uncertain of what should be here respectively in CompDijsktraPath
+					//return the path
+					return null;
+				} else {
+					visited.add(current.node);
+				}
+			}
+			for (Edge edge:edges)
+			{
+				if(edge.from == current.node.getNodeNo()){
+					NodeObject neighbor = nodes.find(edge.to);
+					if(!visited.contains(neighbor)){
+						queue.add(new CompDijsktraPath(neighbor,current.cost + edge.getWeight(), current.node));
+					}
+				}
+			}
+		}
 
-
-		 */
 		return null;
 	}
-		
+
+
+
+/*
+	1: lägg(startnod, 0, tom väg) i Priority queue
+
+            2: While(Priority que is not empty)
+
+            3: (nod, cost, path) = First element in priority queue
+
+            4: If node is not visited
+
+            5: If node is the end, return path
+
+            6: else, add to visited
+
+            7: for every neighbor if not visited add to priority queue
+
+//Very uncertain of what should be here respectively in CompDijsktraPath
+
+*/
+
+
 	public Iterator<E> minimumSpanningTree() {
 		//skapa ett fält cc som för varje nod innehåller en egen tom lista (som skall komma att innehålla bågar sen) (dvs varje nod är i en egen komponent)
 		//Lägg in alla bågar i en prioritetskö pq
@@ -59,4 +99,3 @@ public class DirectedGraph<E extends Edge> {
 	}
 
 }
-  
