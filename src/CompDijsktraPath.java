@@ -1,17 +1,22 @@
 import java.util.*;
 
-public class CompDijsktraPath<NO extends NodeObject> implements Comparable<CompDijsktraPath>{
+public class CompDijsktraPath <E extends Edge>implements Comparable<CompDijsktraPath>{
 
     //Data strucures for the algorithm;
-    public NO node;
+    public Integer nodeNo;
     public double cost;
-    public List<Integer> path;
+    public List<E> path;
 
-    public CompDijsktraPath(NO node, double cost, List path) {
-        this.node = node;
+    public CompDijsktraPath(Integer nodeNo, double cost, List path) {
+        this.nodeNo = nodeNo;
         this.cost = cost;
-        this.path = path;
-        this.path.add(node.getNodeNo());
+
+        if (path != null){
+            this.path = path;
+        }
+        else {
+            this.path = new ArrayList<E>();
+        }
     }
 
     @Override

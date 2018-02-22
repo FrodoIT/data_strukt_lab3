@@ -1,19 +1,15 @@
-
-import javax.xml.soap.Node;
 import java.util.*;
 
-public class DirectedGraph<E extends Edge, NO extends NodeObject> {
+public class DirectedGraph<E extends Edge> {
 
 	//maybe HashMap for graph
 	private List<Edge> edges;
-	private NodeTable<NodeObject> nodes;
 	//Probably need to represent edges
 	//private NodeTable nodeTable;
 
 
 	public DirectedGraph(int noOfNodes) {
 		//initialize the data
-		nodes = new NodeTable<>(noOfNodes);
 		edges = new ArrayList<>();
 	}
 
@@ -23,8 +19,6 @@ public class DirectedGraph<E extends Edge, NO extends NodeObject> {
 
 	public Iterator<E> shortestPath(int from, int to) {
 
-		NodeObject first = nodes.find(from);
-
 		//visited nodes
 		List<Integer> visited = new ArrayList<>();
 
@@ -32,27 +26,30 @@ public class DirectedGraph<E extends Edge, NO extends NodeObject> {
 		PriorityQueue<CompDijsktraPath> queue = new PriorityQueue<>();
 
 		//add first to the queue
-		queue.add(new CompDijsktraPath(first, 0, null));
+		queue.add(new CompDijsktraPath(from, 0, null));
 
 		while (!queue.isEmpty()) {
 
 			CompDijsktraPath current = queue.poll();
-			if (!visited.contains(current.node.getNodeNo())) {
 
-				if (current.node.getNodeNo() == to) {
+			if (!visited.contains(current.nodeNo)) {
+
+				if (current.nodeNo == to) {
 
 					//return the path
 					return current.path.iterator();
 				} else {
-					visited.add(current.node.getNodeNo());
+					visited.add(current.nodeNo);
 				}
 			}
 			for (Edge edge:edges)
 			{
-				if(edge.from == current.node.getNodeNo()){
-					NodeObject neighbor = nodes.find(edge.to);
-					if(!visited.contains(neighbor.getNodeNo())){
-						queue.add(new CompDijsktraPath(neighbor,current.cost + edge.getWeight(), current.path));
+				if(edge.from == current.nodeNo){
+					Integer neighborNo = edge.to;
+					if(!visited.contains(neighborNo)){
+						List<Edge> newPath = current.path;
+						newPath.add(edge);
+						queue.add(new CompDijsktraPath(neighborNo,current.cost + edge.getWeight(),newPath));
 					}
 				}
 			}
@@ -61,7 +58,7 @@ public class DirectedGraph<E extends Edge, NO extends NodeObject> {
 		System.out.println("Destination was not found, something probably wrong in graph");
 		return null;
 	}
-	
+
 
 
 	public Iterator<E> minimumSpanningTree() {
