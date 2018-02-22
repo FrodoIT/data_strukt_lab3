@@ -26,7 +26,7 @@ public class DirectedGraph<E extends Edge, NO extends NodeObject> {
 		NodeObject first = nodes.find(from);
 
 		//visited nodes
-		List<NodeObject> visited = new ArrayList<>();
+		List<Integer> visited = new ArrayList<>();
 
 		//
 		PriorityQueue<CompDijsktraPath> queue = new PriorityQueue<>();
@@ -37,50 +37,31 @@ public class DirectedGraph<E extends Edge, NO extends NodeObject> {
 		while (!queue.isEmpty()) {
 
 			CompDijsktraPath current = queue.poll();
-			if (!visited.contains(current.node)) {
+			if (!visited.contains(current.node.getNodeNo())) {
 
 				if (current.node.getNodeNo() == to) {
 
 					//return the path
-					return null;
+					return current.path.iterator();
 				} else {
-					visited.add(current.node);
+					visited.add(current.node.getNodeNo());
 				}
 			}
 			for (Edge edge:edges)
 			{
 				if(edge.from == current.node.getNodeNo()){
 					NodeObject neighbor = nodes.find(edge.to);
-					if(!visited.contains(neighbor)){
-						queue.add(new CompDijsktraPath(neighbor,current.cost + edge.getWeight(), current.node));
+					if(!visited.contains(neighbor.getNodeNo())){
+						queue.add(new CompDijsktraPath(neighbor,current.cost + edge.getWeight(), current.path));
 					}
 				}
 			}
 		}
-
+		//Destination was not found... wrong in graph
+		System.out.println("Destination was not found, something probably wrong in graph");
 		return null;
 	}
-
-
-
-/*
-	1: lägg(startnod, 0, tom väg) i Priority queue
-
-            2: While(Priority que is not empty)
-
-            3: (nod, cost, path) = First element in priority queue
-
-            4: If node is not visited
-
-            5: If node is the end, return path
-
-            6: else, add to visited
-
-            7: for every neighbor if not visited add to priority queue
-
-//Very uncertain of what should be here respectively in CompDijsktraPath
-
-*/
+	
 
 
 	public Iterator<E> minimumSpanningTree() {

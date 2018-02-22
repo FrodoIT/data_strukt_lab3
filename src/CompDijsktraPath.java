@@ -1,24 +1,22 @@
-import java.util.Iterator;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Set;
+import java.util.*;
 
 public class CompDijsktraPath<NO extends NodeObject> implements Comparable<CompDijsktraPath>{
 
     //Data strucures for the algorithm;
     public NO node;
     public double cost;
-    public List<Integer> prevNode;
+    public List<Integer> path;
 
-    public CompDijsktraPath(NO node, double cost, NO prevNode) {
+    public CompDijsktraPath(NO node, double cost, List path) {
         this.node = node;
         this.cost = cost;
-        this.prevNode = prevNode;
+        this.path = path;
+        this.path.add(node.getNodeNo());
     }
 
     @Override
     public int compareTo(CompDijsktraPath compDijsktraPath) {
-        return 0;
+        return Double.compare(this.cost,compDijsktraPath.cost);
     }
 }
 
