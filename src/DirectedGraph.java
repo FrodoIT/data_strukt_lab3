@@ -43,16 +43,15 @@ public class DirectedGraph<E extends Edge> {
 					return current.path.iterator();
 				} else {
 					visited.add(current.nodeNo);
-				}
-			}
-			for (Edge edge:edges)
-			{
-				if(edge.from == current.nodeNo){
-					Integer neighborNo = edge.to;
-					if(!visited.contains(neighborNo)){
-						List<Edge> newPath = current.path;
-						newPath.add(edge);
-						queue.add(new CompDijsktraPath(neighborNo,current.cost + edge.getWeight(),newPath));
+					for(Edge edge:edges){
+						if(edge.from == current.nodeNo){
+							Integer neighborNo = edge.to;
+							if(!visited.contains(neighborNo)){
+								List<Edge> newPath = new ArrayList<>(current.path);
+								newPath.add(edge);
+								queue.add(new CompDijsktraPath(neighborNo,current.cost + edge.getWeight(),newPath));
+							}
+						}
 					}
 				}
 			}
@@ -73,10 +72,11 @@ public class DirectedGraph<E extends Edge> {
 
 
 		//skapa ett fält cc som för varje nod innehåller en egen tom lista (som skall komma att innehålla bågar sen) (dvs varje nod är i en egen komponent)
+		//Should probably include a CompKruskalEdge
 		List<E> mST = new ArrayList<E>();
 
 		//Lägg in alla bågar i en prioritetskö pq
-		pq.addAll(edges);
+	pq.addAll(edges);
 
 		//Så länge pq ej är tom && |cc| > 1 {
 		while(!pq.isEmpty() && subtrees.size() > 1){
@@ -119,7 +119,8 @@ public class DirectedGraph<E extends Edge> {
 			}
 
 		}
-		
+
+		System.out.println("Was done");
 		return mST.iterator();
 	}
 
