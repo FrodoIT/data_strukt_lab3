@@ -65,63 +65,57 @@ public class DirectedGraph<E extends Edge> {
 
 	public Iterator<E> minimumSpanningTree() {
 
-		PriorityQueue<Edge> pq = new PriorityQueue();
+		PriorityQueue<CompKruskalEdge> pq = new PriorityQueue();
 
 		//The visied nodes
-		ArrayList<ArrayList<Integer>> subtrees = new ArrayList<>(noOfNodes);
+
+		LinkedList<Integer> [] subtrees = new LinkedList[noOfNodes];
+
+		for (int i = 0; i < noOfNodes; i++){
+			subtrees[i] = new LinkedList();
+			subtrees[i].add(i);
+		}
 
 
-		//skapa ett fält cc som för varje nod innehåller en egen tom lista (som skall komma att innehålla bågar sen) (dvs varje nod är i en egen komponent)
-		//Should probably include a CompKruskalEdge
 		List<E> mST = new ArrayList<E>();
 
 		//Lägg in alla bågar i en prioritetskö pq
-	pq.addAll(edges);
-
-		//Så länge pq ej är tom && |cc| > 1 {
-		while(!pq.isEmpty() && subtrees.size() > 1){
-
-			//hämta e = (from, to, weight) från pq
-			Edge e = pq.poll();
-
-			ArrayList<Integer> subtreefrom = new ArrayList<>();
-			ArrayList<Integer> subtreeto = new ArrayList<>();
-
-			for (ArrayList subtree:subtrees)
-			{
-					if (subtree.contains(e.from)){
-						subtreefrom = subtree;
-					}
-					else if(subtree.contains(e.to)){
-						subtreeto = subtree;
-					}
-			}
-
-			if(!subtreefrom.equals(subtreeto)){
-				ArrayList<Integer> newSubtree = new ArrayList<>();
-				if(subtreefrom.size() > subtreeto.size()){
-					subtreefrom.addAll(subtreeto);
-					newSubtree = subtreefrom;
-				}
-				else{
-					subtreeto.addAll(subtreefrom);
-					newSubtree = subtreefrom;
-				}
-				subtrees.remove(subtreeto);
-				subtrees.remove(subtreefrom);
-				subtrees.add(newSubtree);
-				mST.add((E) e);
-			}
-			else if(subtreefrom.isEmpty() && subtreeto.isEmpty()){
-				subtreefrom.add(e.from);
-				subtreefrom.add(e.to);
-				mST.add((E) e);
-			}
-
+		for(Edge edge:edges){
+			pq.add(new CompKruskalEdge(edge));
 		}
 
-		System.out.println("Was done");
+		//Så länge pq ej är tom && |cc| > 1 {
+		while(!pq.isEmpty() && (!mSTDone(subtrees))){
+
+			//hämta e = (from, to, weight) från pq
+			CompKruskalEdge current = pq.poll();
+
+			int from = current.edge.from;
+			int to = current.edge.to;
+
+			if(!(subtrees[from].equals(subtrees[to]))){
+				if(subtrees[from].size() > subtrees[to].size()){
+					subtrees[from].addAll(subtrees[to]);
+					mergeSubtree(subtrees[from], subtrees[to], subtrees);
+				}
+				else {
+					subtrees[to].addAll(subtrees[from]);
+					mergeSubtree(subtrees[to], subtrees[from], subtrees);
+				}
+				mST.add((E) current.edge);
+			}
+		}
 		return mST.iterator();
+	}
+
+	public boolean mSTDone(LinkedList[] subtrees){
+		return (subtrees[0].size() == noOfNodes);
+	}
+
+	public void mergeSubtree(LinkedList<Integer> bigger, LinkedList<Integer> smaller, LinkedList[]subtrees){
+		for(Integer node: smaller){
+			subtrees[node] = bigger;
+		}
 	}
 
 }
