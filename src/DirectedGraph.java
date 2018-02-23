@@ -3,21 +3,31 @@ import java.util.*;
 
 public class DirectedGraph<E extends Edge> {
 
-	//maybe HashMap for graph
+	//all the edges
 	private List<Edge> edges;
-	private int noOfNodes;
-	//Probably need to represent edges
-	//private NodeTable nodeTable;
+	//list of nodes and all their neighbors
+	private HashMap<Integer,ArrayList<Edge>> nodes;
 
+	private int noOfNodes;
 
 	public DirectedGraph(int noOfNodes) {
 		//initialize the data
 		edges = new ArrayList<>();
+		nodes = new HashMap<>();
 		this.noOfNodes = noOfNodes;
 	}
 
 	public void addEdge(E e) {
-		if (e != null) edges.add(e);
+		if (e != null) {
+			edges.add(e);
+
+			Integer from = e.from;
+
+			if(!nodes.containsKey(from)){
+				nodes.put(from,new ArrayList());
+			}
+			nodes.get(from).add(e);
+		}
 	}
 
 	public Iterator<E> shortestPath(int from, int to) {
@@ -25,32 +35,37 @@ public class DirectedGraph<E extends Edge> {
 		//visited nodes
 		List<Integer> visited = new ArrayList<>();
 
-		//
+		//the queue of edges
 		PriorityQueue<CompDijsktraPath> queue = new PriorityQueue<>();
 
 		//add first to the queue
 		queue.add(new CompDijsktraPath(from, 0, null));
 
+		//until the queue is empty
 		while (!queue.isEmpty()) {
 
+			//current path
 			CompDijsktraPath current = queue.poll();
 
 			if (!visited.contains(current.nodeNo)) {
 
 				if (current.nodeNo == to) {
 
-					//return the path
+					//if at the end return the path
 					return current.path.iterator();
+
 				} else {
 					visited.add(current.nodeNo);
-					for(Edge edge:edges){
-						if(edge.from == current.nodeNo){
-							Integer neighborNo = edge.to;
-							if(!visited.contains(neighborNo)){
-								List<Edge> newPath = new ArrayList<>(current.path);
-								newPath.add(edge);
-								queue.add(new CompDijsktraPath(neighborNo,current.cost + edge.getWeight(),newPath));
-							}
+
+					//neighbors of the current node
+					ArrayList<Edge> neighbors = nodes.get(current.nodeNo);
+
+					for(Edge neighbor:neighbors){
+						Integer neighborNo = neighbor.to;
+						if(!visited.contains(neighborNo)){
+							List<Edge> newPath = new ArrayList<>(current.path);
+							newPath.add(neighbor);
+							queue.add(new CompDijsktraPath(neighborNo,current.cost + neighbor.getWeight(),newPath));
 						}
 					}
 				}
@@ -65,10 +80,10 @@ public class DirectedGraph<E extends Edge> {
 
 	public Iterator<E> minimumSpanningTree() {
 
+		//The queue of edges
 		PriorityQueue<CompKruskalEdge> pq = new PriorityQueue();
 
-		//The visied nodes
-
+		//All the subtrees
 		LinkedList<Integer> [] subtrees = new LinkedList[noOfNodes];
 
 		for (int i = 0; i < noOfNodes; i++){
@@ -76,46 +91,54 @@ public class DirectedGraph<E extends Edge> {
 			subtrees[i].add(i);
 		}
 
-
+		//the Minimal Spanning Tree
 		List<E> mST = new ArrayList<E>();
 
-		//Lägg in alla bågar i en prioritetskö pq
+		//Add edges to the queue
 		for(Edge edge:edges){
 			pq.add(new CompKruskalEdge(edge));
 		}
 
-		//Så länge pq ej är tom && |cc| > 1 {
+		//while the queue is not empty and the tree is not finished
 		while(!pq.isEmpty() && (!mSTDone(subtrees))){
 
-			//hämta e = (from, to, weight) från pq
+			//current edge
 			CompKruskalEdge current = pq.poll();
 
-			int from = current.edge.from;
-			int to = current.edge.to;
+			//Current subtrees
+			LinkedList<Integer> sub1 = subtrees[current.edge.from];
+			LinkedList<Integer> sub2 = subtrees[current.edge.to];
 
-			if(!(subtrees[from].equals(subtrees[to]))){
-				if(subtrees[from].size() > subtrees[to].size()){
-					subtrees[from].addAll(subtrees[to]);
-					mergeSubtree(subtrees[from], subtrees[to], subtrees);
+			if(!(sub1.equals(sub2))){
+				if(sub1.size() > sub2.size()){
+
+					//add all to the bigger tree
+					sub1.addAll(sub2);
+
+					//point all from the smaller tree to the bigger tree
+					for(Integer node: sub2){
+						subtrees[node] = sub1;
+					}
 				}
 				else {
-					subtrees[to].addAll(subtrees[from]);
-					mergeSubtree(subtrees[to], subtrees[from], subtrees);
+
+					//add all to the bigger tree
+					sub2.addAll(sub1);
+
+					//point all from the smaller tree to the bigger tree
+					for(Integer node: sub1){
+						subtrees[node] = sub2;
+					}
 				}
+
+				//Add the edge to the minimal spanning tree
 				mST.add((E) current.edge);
 			}
 		}
 		return mST.iterator();
 	}
 
-	public boolean mSTDone(LinkedList[] subtrees){
+	private boolean mSTDone(LinkedList[] subtrees){
 		return (subtrees[0].size() == noOfNodes);
 	}
-
-	public void mergeSubtree(LinkedList<Integer> bigger, LinkedList<Integer> smaller, LinkedList[]subtrees){
-		for(Integer node: smaller){
-			subtrees[node] = bigger;
-		}
-	}
-
 }
