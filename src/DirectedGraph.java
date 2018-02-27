@@ -1,4 +1,3 @@
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class DirectedGraph<E extends Edge> {
@@ -83,7 +82,7 @@ public class DirectedGraph<E extends Edge> {
 		}
 		//the minimum spanning tree
 		List<E> mST = new ArrayList<>();
-		//add the edges to the queue
+		//add all the edges to the queue
 		for(E edge:edges){
 			pq.add(new CompKruskalEdge<E>(edge));
 		}
@@ -117,6 +116,7 @@ public class DirectedGraph<E extends Edge> {
 				mST.add(current.edge);
 			}
 		}
+		//return iterator of the minimal spanning tree
 		return mST.iterator();
 	}
 	//helper method that returns true if the minimal spanning tree is done
