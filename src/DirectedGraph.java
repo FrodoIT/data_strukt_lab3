@@ -2,144 +2,127 @@ import java.lang.reflect.Array;
 import java.util.*;
 
 public class DirectedGraph<E extends Edge> {
-
-	//all the edges
+	//list with all the edges
 	private List<E> edges;
-	//list of nodes and all their neighbors
-	private HashMap<Integer,ArrayList<E>> nodes;
-
+	//list with all the nodes and all their neighbors
+	private HashMap<Integer, ArrayList<E>> nodes;
+	//number of nodes in the graph
 	private int noOfNodes;
-
+	//create a DirectedGraph with the specified number of nodes
 	public DirectedGraph(int noOfNodes) {
-		//initialize the data
 		edges = new ArrayList<>();
 		nodes = new HashMap<>();
 		this.noOfNodes = noOfNodes;
 	}
-
+	//add a specified, non-null edge to the graph
 	public void addEdge(E e) {
 		if (e != null) {
 			edges.add(e);
-
+			//the from node of the specified edge
 			Integer from = e.from;
-
+			//if the from node is not already included in the graph, put it there
 			if(!nodes.containsKey(from)){
-				nodes.put(from,new ArrayList());
+				nodes.put(from, new ArrayList());
 			}
+			//add the new edge to the from node
 			nodes.get(from).add(e);
 		}
 	}
-
+	//find the shortest path between a node from and a node to
 	public Iterator<E> shortestPath(int from, int to) {
-
-		//visited nodes
+		//list to contain visited nodes
 		List<Integer> visited = new ArrayList<>();
-
 		//the queue of edges
 		PriorityQueue<CompDijsktraPath> queue = new PriorityQueue<>();
-
-		//add first to the queue
+		//add a first path to the queue
 		queue.add(new CompDijsktraPath(from, 0, null));
-
 		//until the queue is empty
 		while (!queue.isEmpty()) {
-
-			//current path
+			//get current path
 			CompDijsktraPath current = queue.poll();
-
+			//if the current node is not visited
 			if (!visited.contains(current.nodeNo)) {
-
+				//if the current node is the to node, we've reached the end so we return the path
 				if (current.nodeNo == to) {
-
-					//if at the end return the path
 					return current.path.iterator();
-
 				} else {
+					//add the current node to the list of visited nodes
 					visited.add(current.nodeNo);
-
-					//neighbors of the current node
-					ArrayList<E> neighbors = nodes.get(current.nodeNo);
-
-					for(E neighbor:neighbors){
-						Integer neighborNo = neighbor.to;
-						if(!visited.contains(neighborNo)){
+					//get outgoing edges from the current node
+					ArrayList<E> outgoingEdges = nodes.get(current.nodeNo);
+					//for each outgoing edge from the current node
+					for(E outEdge:outgoingEdges){
+						//the to node of the outgoing edge
+						Integer toNode = outEdge.to;
+						//if the to node is not visited
+						if(!visited.contains(toNode)){
+							//create a new path consisitng of the current path plus the outgoing edge
 							List<E> newPath = new ArrayList<>(current.path);
-							newPath.add(neighbor);
-							queue.add(new CompDijsktraPath(neighborNo,current.cost + neighbor.getWeight(),newPath));
+							newPath.add(outEdge);
+							//add the new path to the queue
+							queue.add(new CompDijsktraPath(toNode, current.cost + outEdge.getWeight(), newPath));
 						}
 					}
 				}
 			}
 		}
-		//Destination was not found... wrong in graph
-		System.out.println("Destination was not found, something probably wrong in graph");
+		//didn't find destination
+		System.out.println("Destination was not found, something's probably wrong in graph");
 		return null;
 	}
-
-
-
+	//find minimum spanning tree of the graph
 	public Iterator<E> minimumSpanningTree() {
-
-		//The queue of edges
+		//the queue of edges
 		PriorityQueue<CompKruskalEdge<E>> pq = new PriorityQueue();
-
-		//All the subtrees
+		//all the subtrees
 		LinkedList<Integer> [] subtrees = new LinkedList[noOfNodes];
-
+		//make a new subtree for each node, that contains the node
 		for (int i = 0; i < noOfNodes; i++){
 			subtrees[i] = new LinkedList();
 			subtrees[i].add(i);
 		}
-
-		//the Minimal Spanning Tree
+		//the minimum spanning tree
 		List<E> mST = new ArrayList<>();
-
-		//Add edges to the queue
+		//add the edges to the queue
 		for(E edge:edges){
 			pq.add(new CompKruskalEdge<E>(edge));
 		}
-
 		//while the queue is not empty and the tree is not finished
 		while(!pq.isEmpty() && (!mSTDone(subtrees))){
-
-			//current edge
+			//the current edge
 			CompKruskalEdge<E> current = pq.poll();
-
-			//Current subtrees
+			//current subtrees
 			LinkedList<Integer> sub1 = subtrees[current.edge.from];
 			LinkedList<Integer> sub2 = subtrees[current.edge.to];
-
+			//if the two subtrees are not equeal
 			if(!(sub1.equals(sub2))){
+				//if subtree 1 is greater than subtree 2
 				if(sub1.size() > sub2.size()){
-
 					//add all to the bigger tree
 					sub1.addAll(sub2);
-
-					//point all from the smaller tree to the bigger tree
+					//point all from the lesser tree to the greater tree
 					for(Integer node: sub2){
 						subtrees[node] = sub1;
 					}
 				}
+				//else the other tree is the greater
 				else {
-
-					//add all to the bigger tree
 					sub2.addAll(sub1);
-
-					//point all from the smaller tree to the bigger tree
+					//point all from the lesser tree to the greater tree
 					for(Integer node: sub1){
 						subtrees[node] = sub2;
 					}
 				}
-
-				//Add the edge to the minimal spanning tree
-
+				//add the edge to the minimal spanning tree
 				mST.add(current.edge);
 			}
 		}
 		return mST.iterator();
 	}
-
+	//helper method that returns true if the minimal spanning tree is done
 	private boolean mSTDone(LinkedList[] subtrees){
+		//when any of the subtrees contains all the nodes, all of them do, and the tree is done
+		//check an arbitrary subtree
 		return (subtrees[0].size() == noOfNodes);
 	}
 }
