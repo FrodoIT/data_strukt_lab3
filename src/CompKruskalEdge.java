@@ -1,8 +1,8 @@
-public class CompKruskalEdge implements Comparable<CompKruskalEdge> {
+public class CompKruskalEdge<E extends Edge> implements Comparable<CompKruskalEdge> {
 
-    public Edge edge;
+    public E edge;
 
-    public CompKruskalEdge(Edge edge){
+    public CompKruskalEdge(E edge){
         this.edge = edge;
 
     }

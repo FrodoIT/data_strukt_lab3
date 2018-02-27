@@ -4,9 +4,9 @@ import java.util.*;
 public class DirectedGraph<E extends Edge> {
 
 	//all the edges
-	private List<Edge> edges;
+	private List<E> edges;
 	//list of nodes and all their neighbors
-	private HashMap<Integer,ArrayList<Edge>> nodes;
+	private HashMap<Integer,ArrayList<E>> nodes;
 
 	private int noOfNodes;
 
@@ -58,12 +58,12 @@ public class DirectedGraph<E extends Edge> {
 					visited.add(current.nodeNo);
 
 					//neighbors of the current node
-					ArrayList<Edge> neighbors = nodes.get(current.nodeNo);
+					ArrayList<E> neighbors = nodes.get(current.nodeNo);
 
-					for(Edge neighbor:neighbors){
+					for(E neighbor:neighbors){
 						Integer neighborNo = neighbor.to;
 						if(!visited.contains(neighborNo)){
-							List<Edge> newPath = new ArrayList<>(current.path);
+							List<E> newPath = new ArrayList<>(current.path);
 							newPath.add(neighbor);
 							queue.add(new CompDijsktraPath(neighborNo,current.cost + neighbor.getWeight(),newPath));
 						}
@@ -81,7 +81,7 @@ public class DirectedGraph<E extends Edge> {
 	public Iterator<E> minimumSpanningTree() {
 
 		//The queue of edges
-		PriorityQueue<CompKruskalEdge> pq = new PriorityQueue();
+		PriorityQueue<CompKruskalEdge<E>> pq = new PriorityQueue();
 
 		//All the subtrees
 		LinkedList<Integer> [] subtrees = new LinkedList[noOfNodes];
@@ -92,18 +92,18 @@ public class DirectedGraph<E extends Edge> {
 		}
 
 		//the Minimal Spanning Tree
-		List<E> mST = new ArrayList<E>();
+		List<E> mST = new ArrayList<>();
 
 		//Add edges to the queue
-		for(Edge edge:edges){
-			pq.add(new CompKruskalEdge(edge));
+		for(E edge:edges){
+			pq.add(new CompKruskalEdge<E>(edge));
 		}
 
 		//while the queue is not empty and the tree is not finished
 		while(!pq.isEmpty() && (!mSTDone(subtrees))){
 
 			//current edge
-			CompKruskalEdge current = pq.poll();
+			CompKruskalEdge<E> current = pq.poll();
 
 			//Current subtrees
 			LinkedList<Integer> sub1 = subtrees[current.edge.from];
@@ -132,7 +132,8 @@ public class DirectedGraph<E extends Edge> {
 				}
 
 				//Add the edge to the minimal spanning tree
-				mST.add((E) current.edge);
+
+				mST.add(current.edge);
 			}
 		}
 		return mST.iterator();
